@@ -5,3 +5,4 @@ jinja2==2.11.2
 fastapi
 dateparser==1.1.1
 fastapi==0.78.0
+slack_sdk
