@@ -25,7 +25,7 @@ async def get_webhook_response(request: Request):
         # Call the chat.postMessage method using the WebClient
         if channel:
             result = client.chat_postMessage(
-                channel=channel_id, 
+                channel=channel, 
                 text="Hello world"
             )
             logger.info(result)
