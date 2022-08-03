@@ -7,4 +7,7 @@ origins = ["*"]
 @app.post("/api/webhook/")
 async def get_webhook_response(request: Request):
     body = await request.json()
-    return {"challenge": body["challenge"]}
+    print(body)
+    if "challenge" in body:
+        return {"challenge": body["challenge"]}
+    return {"message": "ok"}
