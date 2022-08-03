@@ -38,9 +38,10 @@ def send_message(message, channel):
         # Call the chat.postMessage method using the WebClient
         if message:
 
-            result = client.chat_postMessage(
+            result = client.chat_postEphemeral(
                 channel=channel, 
-                text=message
+                text=message, 
+                user="U1RNT514Y"
             )
             logger.info(result)
 
@@ -77,12 +78,6 @@ async def get_webhook_response(request: Request):
                     ist, cst, est = convert_date(parsed)
                     message = "Conversion: "+e.text+"\nIST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
                     send_message(message, channel)
-
-
-    
-    
-
-    print(body)
     if "challenge" in body:
         return {"challenge": body["challenge"]}
     return {"message": "ok"}
