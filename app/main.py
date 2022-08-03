@@ -12,7 +12,8 @@ from slack_sdk.errors import SlackApiError
 import iso8601
 import dateutil.parser
 from pytz import timezone
-
+from dateparser import search
+from datetime import datetime, timedelta
 # WebClient instantiates a client that can call API methods
 # When using Bolt, you can use either `app.client` or the `client` passed to listeners.
 client = WebClient(token=os.environ.get("SLACK_TOKEN"))
@@ -25,6 +26,7 @@ def convert_date(date_str):
     ist =  timezone('Asia/Kolkata')
     cst =  timezone('US/Central')
     est = timezone('US/Eastern')
+    date_str = date_str - timedelta(hours=1)
 
     ist_time = date_str.astimezone(ist).strftime(fmt)
     cst_time = date_str.astimezone(cst).strftime(fmt)
@@ -34,16 +36,21 @@ def convert_date(date_str):
 
 @app.post("/api/webhook/")
 async def get_webhook_response(request: Request):
+    message = False
     body = await request.json()
     if "event" in body and "channel" in body["event"]:
             channel = body["event"]["channel"]
             if "text" in body["event"]:
                 text = body["event"]["text"]
-                parsed = dateparser.parse(text)
-                if parsed:
-                    ist, cst, est = convert_date(parsed)
-                    message = "IST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
-                    print(message)
+                searched_dates = dateparser.search.search_dates(text)
+                if searched_dates and len(searched_dates):
+                    text = searched_dates[0][0]
+                    
+                    parsed = dateparser.parse(text)
+                    if parsed:
+                        ist, cst, est = convert_date(parsed)
+                        message = "IST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
+                        print(message)
 
 
     if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
