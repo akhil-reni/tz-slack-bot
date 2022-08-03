@@ -64,6 +64,8 @@ def convert_date(date_str):
 async def get_webhook_response(request: Request):
     message = False
     body = await request.json()
+    if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
+        return  {"message": "ok"}
     if "event" in body and "channel" in body["event"]:
             channel = body["event"]["channel"]
             if "text" in body["event"]:
@@ -77,8 +79,7 @@ async def get_webhook_response(request: Request):
                     send_message(message, channel)
 
 
-    if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
-        message = False
+    
     
 
     print(body)
