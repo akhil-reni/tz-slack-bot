@@ -21,17 +21,20 @@ async def get_webhook_response(request: Request):
     body = await request.json()
     if "event" in body and "channel" in body["event"]:
             channel = body["event"]["channel"]
-    # try:
-    #     # Call the chat.postMessage method using the WebClient
-    #     if channel:
-    #         result = client.chat_postMessage(
-    #             channel=channel, 
-    #             text="Hello world"
-    #         )
-    #         logger.info(result)
+            message = True
+        if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
+            message = False
+    try:
+        # Call the chat.postMessage method using the WebClient
+        if message:
+            result = client.chat_postMessage(
+                channel=channel, 
+                text="Hello world"
+            )
+            logger.info(result)
 
-    # except SlackApiError as e:
-    #     logger.error(f"Error posting message: {e}")
+    except SlackApiError as e:
+        logger.error(f"Error posting message: {e}")
 
     print(body)
     if "challenge" in body:
