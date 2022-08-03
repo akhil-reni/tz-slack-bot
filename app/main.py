@@ -71,7 +71,7 @@ async def get_webhook_response(request: Request):
             if "text" in body["event"]:
                 text = body["event"]["text"]
 
-                doc = nlp("let's meet tomorrow at 10am CST")
+                doc = nlp(text)
                 for e in doc.ents:
                     parsed = dateparser.parse(e.text)
                     ist, cst, est = convert_date(parsed)
