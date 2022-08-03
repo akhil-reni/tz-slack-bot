@@ -1,5 +1,7 @@
 from fastapi import FastAPI, HTTPException, Request
 import dateparser
+import spacy
+from timexy import Timexy
 
 app = FastAPI()
 origins = ["*"]
@@ -20,6 +22,30 @@ client = WebClient(token=os.environ.get("SLACK_TOKEN"))
 logger = logging.getLogger(__name__)
 # ID of the channel you want to send the message to
 
+nlp = spacy.load("en_core_web_sm")
+
+
+config = {
+    "kb_id_type": "timex3",  # possible values: 'timex3'(default), 'timestamp'
+    "label": "timexy",       # default: 'timexy'
+    "overwrite": False       # default: False
+}
+nlp.add_pipe("timexy", config=config, before="ner")
+
+def send_message(message, channel):
+    print(message)
+    try:
+        # Call the chat.postMessage method using the WebClient
+        if message:
+
+            result = client.chat_postMessage(
+                channel=channel, 
+                text=message
+            )
+            logger.info(result)
+
+    except SlackApiError as e:
+        logger.error(f"Error posting message: {e}")
 
 def convert_date(date_str):
     fmt = '%H:%M:%S'
@@ -42,31 +68,18 @@ async def get_webhook_response(request: Request):
             channel = body["event"]["channel"]
             if "text" in body["event"]:
                 text = body["event"]["text"]
-                searched_dates = dateparser.search.search_dates(text)
-                if searched_dates and len(searched_dates):
-                    text = searched_dates[0][0]
-                    
-                    parsed = dateparser.parse(text)
-                    if parsed:
-                        ist, cst, est = convert_date(parsed)
-                        message = "IST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
-                        print(message)
+
+                doc = nlp("let's meet tomorrow at 10am CST")
+                for e in doc.ents:
+                    parsed = dateparser.parse(e.text)
+                    ist, cst, est = convert_date(parsed)
+                    message = "Conversion: "+e.text+"\nIST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
+                    send_message(message, channel)
 
 
     if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
         message = False
-    try:
-        # Call the chat.postMessage method using the WebClient
-        if message:
-
-            result = client.chat_postMessage(
-                channel=channel, 
-                text=message
-            )
-            logger.info(result)
-
-    except SlackApiError as e:
-        logger.error(f"Error posting message: {e}")
+    
 
     print(body)
     if "challenge" in body:
