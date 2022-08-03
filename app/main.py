@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException, Request
-import datetimeparser
+import dateparser
 
 app = FastAPI()
 origins = ["*"]
