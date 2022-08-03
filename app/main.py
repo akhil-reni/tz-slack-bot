@@ -22,8 +22,8 @@ async def get_webhook_response(request: Request):
     if "event" in body and "channel" in body["event"]:
             channel = body["event"]["channel"]
             message = True
-        if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
-            message = False
+    if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
+        message = False
     try:
         # Call the chat.postMessage method using the WebClient
         if message:
