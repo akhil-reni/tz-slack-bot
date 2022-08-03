@@ -6,3 +6,4 @@ fastapi
 dateparser==1.1.1
 fastapi==0.78.0
 slack_sdk
+iso8601

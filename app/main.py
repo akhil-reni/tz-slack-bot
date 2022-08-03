@@ -9,6 +9,9 @@ import os
 # Import WebClient from Python SDK (github.com/slackapi/python-slack-sdk)
 from slack_sdk import WebClient
 from slack_sdk.errors import SlackApiError
+import iso8601
+import dateutil.parser
+from pytz import timezone
 
 # WebClient instantiates a client that can call API methods
 # When using Bolt, you can use either `app.client` or the `client` passed to listeners.
@@ -16,20 +19,42 @@ client = WebClient(token=os.environ.get("SLACK_TOKEN"))
 logger = logging.getLogger(__name__)
 # ID of the channel you want to send the message to
 
+
+def convert_date(date_str):
+    fmt = '%H:%M:%S'
+    ist =  timezone('Asia/Kolkata')
+    cst =  timezone('US/Central')
+    est = timezone('US/Eastern')
+
+    ist_time = date_str.astimezone(ist).strftime(fmt)
+    cst_time = date_str.astimezone(cst).strftime(fmt)
+    est_time = date_str.astimezone(est).strftime(fmt)
+    return ist_time, cst_time, est_time
+
+
 @app.post("/api/webhook/")
 async def get_webhook_response(request: Request):
     body = await request.json()
     if "event" in body and "channel" in body["event"]:
             channel = body["event"]["channel"]
-            message = True
+            if "text" in body["event"]:
+                text = body["event"]["text"]
+                parsed = dateparser.parse(text)
+                if parsed:
+                    ist, cst, est = convert_date(parsed)
+                    message = "IST: " + str(ist) + "\nCST: " + str(cst) + "\nEST: " + str(est)
+                    print(message)
+
+
     if "event" in body and "bot_id" in body["event"] and body["event"]["bot_id"]:
         message = False
     try:
         # Call the chat.postMessage method using the WebClient
         if message:
+
             result = client.chat_postMessage(
                 channel=channel, 
-                text="Hello world"
+                text=message
             )
             logger.info(result)
 
